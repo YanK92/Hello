@@ -1,0 +1,16 @@
+{
+  "name": "3d-web-experience",
+  "version": "1.0.0",
+  "description": "Immersive 3D web experience template built with Three.js and Vite",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

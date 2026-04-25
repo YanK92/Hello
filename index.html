@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Web Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <canvas class="webgl"></canvas>
+
+    <div class="overlay">
+      <nav class="nav">
+        <div class="nav__logo">3D Experience</div>
+        <ul class="nav__links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Work</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+
+      <section class="hero">
+        <h1 class="hero__title">
+          <span class="hero__title--line">Explore the</span>
+          <span class="hero__title--line hero__title--accent">Universe</span>
+        </h1>
+        <p class="hero__subtitle">
+          An immersive 3D web experience built with Three.js, featuring
+          dynamic particle systems and real-time bloom rendering.
+        </p>
+        <button class="hero__cta">Begin Journey</button>
+      </section>
+
+      <div class="scroll-indicator">
+        <span>Move mouse to explore</span>
+        <div class="scroll-indicator__line"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
