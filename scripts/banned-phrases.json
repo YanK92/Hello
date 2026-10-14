@@ -1,0 +1,25 @@
+{
+  "_comment": "Phrases that would turn the product from a records tool into advice or labelling. Case-insensitive. See CLAUDE.md.",
+  "phrases": [
+    "you should",
+    "you must",
+    "you ought to",
+    "we recommend",
+    "we advise",
+    "our advice",
+    "you will win",
+    "you'll win",
+    "likely to win",
+    "chance of success",
+    "strong case",
+    "weak case",
+    "guaranteed",
+    "the bank is wrong",
+    "the dealer is wrong",
+    "the trader is wrong",
+    "sandbag",
+    "biased",
+    "acting in bad faith",
+    "admission"
+  ]
+}

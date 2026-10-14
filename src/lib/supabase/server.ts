@@ -1,0 +1,38 @@
+import "server-only";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { supabaseEnv } from "./env";
+
+/**
+ * Supabase client for Server Components, Server Actions and Route Handlers.
+ * Create a new one per request; never share it between requests.
+ */
+export async function createClient() {
+  const cookieStore = await cookies();
+  const { url, key } = supabaseEnv();
+
+  return createServerClient(url, key, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          );
+        } catch {
+          // Called from a Server Component, where cookies are read-only. The
+          // proxy refreshes the session, so this is safe to ignore.
+        }
+      },
+    },
+  });
+}
+
+/** Returns the signed-in user's id, or null. Verifies the JWT. */
+export async function currentUserId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims.sub ?? null;
+}
