@@ -1060,3 +1060,23 @@ details.card[open] > summary {
 .plan-paid {
   border-left: 4px solid var(--color-primary);
 }
+
+/* Phase 6: account and danger zone */
+.danger-zone {
+  border-color: var(--color-danger);
+}
+
+.danger-zone > summary {
+  color: var(--color-danger);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: var(--tap-target);
+  display: flex;
+  align-items: center;
+}
+
+.danger-button {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-surface);
+}

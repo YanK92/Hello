@@ -36,13 +36,33 @@ across `src/` and `public/`. Add phrases there rather than weakening the check.
 - Every user-owned table has `user_id default auth.uid()`, RLS enabled, and policies limited to `(select auth.uid())`.
   Child tables also check the parent case is owned (`public.owns_case`).
 - `audit_log` is append-only: no update/delete policies, and triggers block update, delete and truncate.
-  Audit rows are written by the `audit_row_change` trigger, not by app code.
+  Audit rows are written by the `audit_row_change` trigger, not by app code. The only exception: rows for an
+  account that has been deleted can be removed (account erasure).
 - Server-side timestamps (`events.recorded_at`, `evidence.uploaded_at`) are set by triggers; clients cannot set them.
 - Evidence files live in the private `evidence` bucket under `<user_id>/<case_id>/<uuid>.<ext>`, served by signed URL only. No overwrite.
 - Evidence rows are written only by the server with the service role (`src/lib/supabase/admin.ts`), after it has
   downloaded the stored file and matched its own SHA-256 against the browser's. Users may only change `event_id`.
   Use the admin client for nothing else, and only after confirming the signed-in user owns the case.
 - Every new table or policy needs RLS tests in `tests/db/` proving cross-user access fails.
+- Rows that hang off another user-owned row (transcripts, highlights, links, notes, responses) get `case_id`/`user_id`
+  filled by a trigger that runs as the caller, so another user's parent row is invisible and the insert fails.
+- Paid access (`entitlements`) is written only by the Stripe webhook. Gate paid features on the server with
+  `hasPaidAccess()` (`src/lib/payments/access.ts`), never only in the UI.
+- Rate-limit new write actions with `withinLimit()` (`src/lib/rate-limit.ts`).
+- Uploads must pass `contentMatchesType` (magic bytes) and `scanUpload` before the server records them.
+
+## Where things are
+
+| Area | Code |
+| --- | --- |
+| Day-1 wizard, check-ins, uploads | `src/app/start`, `src/components/location`, `src/lib/evidence`, `src/app/cases/evidence-actions.ts` |
+| Timeline and history | `src/components/timeline`, `src/app/cases/entry-actions.ts`, `src/lib/chronology.ts`, `src/lib/dates.ts` |
+| Recordings and transcripts | `src/app/cases/[id]/recordings`, `src/components/recordings`, `src/lib/transcripts` |
+| Data requests (SAR) | `src/app/cases/[id]/sar`, `src/components/sar`, `src/lib/sar`, `src/lib/reminders`, `src/app/api/cron` |
+| Export and compare | `src/lib/export`, `src/app/cases/[id]/export`, `src/app/cases/[id]/compare` |
+| Payments | `src/lib/payments`, `src/app/upgrade`, `src/app/api/stripe` |
+| Account and data rights | `src/app/account`, `src/lib/account` |
+| Launch to-do (non-code) | `docs/launch-checklist.md` |
 
 ## Commands
 
@@ -54,6 +74,7 @@ across `src/` and `public/`. Add phrases there rather than weakening the check.
 | `npm run test:e2e` | Playwright; set `E2E_SUPABASE=1` with `npx supabase start` running for the auth flow |
 | `npx supabase start` | Local Supabase stack (Docker), applies migrations |
 | `npm run preview:shots` | Phone screenshots of `/dev/preview/*` (sample data, dev only, 404 in production) |
+| `/dev/preview-bundle` | Sample case bundle PDF from sample data (dev only) |
 
 ## Visual previews
 

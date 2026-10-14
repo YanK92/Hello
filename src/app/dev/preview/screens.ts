@@ -28,6 +28,7 @@ export const PREVIEW_SCREENS = [
   "export-locked",
   "compare",
   "upgrade",
+  "account",
 ] as const;
 
 /** The preview uses sample data only, and is off in production builds. */

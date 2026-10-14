@@ -19,6 +19,20 @@ npm run dev
 Open http://localhost:3000, create an account and start a case. Locally, email
 confirmation is off and any emails go to Mailpit at http://127.0.0.1:54324.
 
+## What it does
+
+- **Day-1 evidence lock:** "Something has gone wrong" wizard, check-ins with location, photos and documents with
+  SHA-256 fingerprints verified by the server.
+- **Timeline:** dated entries with who/what/files, full edit history, filters, day counts between entries.
+- **Recordings:** call recordings with a recording notice, imported or provider transcripts, search, highlights.
+- **Data requests (SAR):** neutral letter from the user's choices, PDF, due dates per the ICO method, reminders,
+  response tracking.
+- **Export:** indexed bundle PDF and a ZIP of originals with a checkable fingerprint manifest; side-by-side viewer.
+- **Payments:** Stripe unlock for the SAR helper and export (off until a price is configured).
+- **Data rights:** download all data, delete a case, delete the account.
+
+Before a public launch, work through [docs/launch-checklist.md](docs/launch-checklist.md).
+
 ## Tests
 
 ```bash

@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { isUuid } from "@/lib/cases/guard";
 import { hasPaidAccess, PAID_FEATURE_MESSAGE } from "@/lib/payments/access";
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { currentUserId } from "@/lib/supabase/server";
 import { collectExport, MAX_EXPORT_BYTES, type ExportSource } from "./collect";
 
@@ -9,6 +10,7 @@ import { collectExport, MAX_EXPORT_BYTES, type ExportSource } from "./collect";
 export async function exportSourceOrError(caseId: string): Promise<ExportSource | NextResponse> {
   if (!isUuid(caseId) || !(await currentUserId())) return NextResponse.json({ error: "not found" }, { status: 404 });
   if (!(await hasPaidAccess())) return NextResponse.json({ error: PAID_FEATURE_MESSAGE }, { status: 402 });
+  if (!(await withinLimit("export"))) return NextResponse.json({ error: RATE_LIMIT_MESSAGE }, { status: 429 });
   const source = await collectExport(caseId);
   if (!source) return NextResponse.json({ error: "not found" }, { status: 404 });
   if (source.totalBytes > MAX_EXPORT_BYTES) {

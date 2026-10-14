@@ -16,8 +16,9 @@ test("export a bundle and originals, and note documents side by side", async ({ 
   await page.getByLabel(/case title/i).fill("Car");
   await page.getByRole("button", { name: "Save case" }).click();
 
-  const a = Buffer.from("first document bytes");
-  const b = Buffer.from("second document bytes");
+  const jpeg = (s: string) => Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from(s)]);
+  const a = jpeg("first document bytes");
+  const b = jpeg("second document bytes");
   await page.locator('input[type="file"][multiple]').setInputFiles([
     { name: "a.jpg", mimeType: "image/jpeg", buffer: a },
     { name: "b.jpg", mimeType: "image/jpeg", buffer: b },

@@ -1,7 +1,10 @@
 "use server";
 
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { checkIntegrity, sha256Hex } from "@/lib/integrity";
 import { isAcceptedMime, maxBytesFor, pathBelongsTo, sourceForMime } from "@/lib/evidence/rules";
+import { scanUpload } from "@/lib/evidence/scan";
+import { contentMatchesType } from "@/lib/evidence/sniff";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, currentUserId } from "@/lib/supabase/server";
 import { checkInSchema, locationColumns, registerEvidenceSchema } from "@/lib/validation/evidence";
@@ -29,6 +32,7 @@ export async function registerEvidence(input: unknown): Promise<ActionResult<{ e
 
   const userId = await currentUserId();
   if (!userId) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("upload"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
   if (!pathBelongsTo(storagePath, userId, caseId) || !(await ownsCase(caseId))) {
     return { ok: false, error: "That upload could not be recorded." };
   }
@@ -43,6 +47,17 @@ export async function registerEvidence(input: unknown): Promise<ActionResult<{ e
   if (!isAcceptedMime(mime) || blob.size === 0 || blob.size > maxBytesFor(mime)) {
     await discard();
     return { ok: false, error: "That file type or size is not supported." };
+  }
+
+  // The declared type must match the file's actual content.
+  if (!contentMatchesType(new Uint8Array(await blob.slice(0, 64).arrayBuffer()), mime)) {
+    await discard();
+    return { ok: false, error: "That file's content does not match its type, so it was not saved." };
+  }
+
+  if (!(await scanUpload(blob, mime)).clean) {
+    await discard();
+    return { ok: false, error: "This file could not be accepted by the safety check, so it was not saved." };
   }
 
   const serverHash = await sha256Hex(blob);
@@ -108,6 +123,7 @@ export async function addCheckIn(input: unknown): Promise<ActionResult<{ eventId
   const parsed = checkInSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("entry"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
 
   const supabase = await createClient();
   const { data, error } = await supabase

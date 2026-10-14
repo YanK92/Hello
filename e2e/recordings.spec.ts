@@ -31,7 +31,7 @@ test("upload, transcribe by import, search and highlight a recording", async ({ 
   await page.locator('input[type="file"][multiple]').setInputFiles({
     name: "dealer-call.m4a",
     mimeType: "audio/mp4",
-    buffer: Buffer.from("pretend audio bytes"),
+    buffer: Buffer.concat([Buffer.from([0, 0, 0, 0x20]), Buffer.from("ftypM4A test audio bytes")]),
   });
   await expect(page.getByRole("link", { name: "dealer-call.m4a" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("No transcript yet")).toBeVisible();

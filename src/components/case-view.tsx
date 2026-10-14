@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CaseTabs } from "@/components/case-tabs";
 import { EvidenceList } from "@/components/evidence/evidence-list";
 import { EvidenceUploader } from "@/components/evidence/evidence-uploader";
+import { DeleteCaseForm } from "@/components/danger-forms";
 import { CheckInCard } from "@/components/location/check-in-card";
 import { TimelineEntryCard } from "@/components/timeline/timeline-entry-card";
 import type { CaseData } from "@/lib/cases/load";
@@ -54,6 +55,8 @@ export function CaseView({ data, userId }: { data: CaseData; userId: string }) {
 
       <h2>Files ({data.evidence.length})</h2>
       <EvidenceList items={data.evidence} />
+
+      <DeleteCaseForm caseId={data.id} title={data.title} />
     </>
   );
 }

@@ -11,6 +11,7 @@ import { SarWizard } from "@/components/sar/sar-wizard";
 import { CompareView } from "@/app/cases/[id]/compare/compare-view";
 import { ExportView } from "@/app/cases/[id]/export/export-view";
 import { UpgradeView } from "@/app/upgrade/upgrade-view";
+import { AccountView } from "@/app/account/account-view";
 import {
   SAMPLE_NOW,
   SAMPLE_USER,
@@ -200,6 +201,8 @@ export function PreviewScreen({ screen }: { screen: string }) {
     }
     case "upgrade":
       return <UpgradeView status={null} paywallOn hasAccess={false} priceLabel="£19 one-off" />;
+    case "account":
+      return <AccountView email="alex@example.test" remindersOn plan="Paid" />;
     default:
       return <p>Unknown screen.</p>;
   }

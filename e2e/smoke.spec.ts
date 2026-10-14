@@ -26,3 +26,25 @@ test("no horizontal scrolling on a phone", async ({ page }) => {
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test("security headers are set", async ({ request }) => {
+  const res = await request.get("/");
+  const h = res.headers();
+  expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(h["x-frame-options"]).toBe("DENY");
+  expect(h["x-content-type-options"]).toBe("nosniff");
+  expect(h["permissions-policy"]).toContain("geolocation=(self)");
+  expect(h["x-powered-by"]).toBeUndefined();
+});
+
+test("health check responds without exposing data", async ({ request }) => {
+  const res = await request.get("/api/health");
+  expect([200, 503]).toContain(res.status());
+  expect(Object.keys(await res.json()).sort()).toEqual(["ms", "status", "supabase"]);
+});
+
+test("privacy summary lists cookies and rights", async ({ page }) => {
+  await page.goto("/privacy");
+  await expect(page.getByRole("heading", { name: "How your data is handled" })).toBeVisible();
+  await expect(page.getByText(/no analytics or advertising cookies/i)).toBeVisible();
+});

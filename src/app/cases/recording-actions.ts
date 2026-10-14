@@ -1,5 +1,6 @@
 "use server";
 
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, currentUserId } from "@/lib/supabase/server";
@@ -32,6 +33,7 @@ export async function importTranscript(input: unknown): Promise<ActionResult> {
   const parsed = importSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("transcript_import"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
 
   const segments = parseTranscript(parsed.data.fileName || "pasted.txt", parsed.data.content);
   if (!segments.length) return { ok: false, error: "No text was found in that transcript." };
@@ -58,6 +60,7 @@ export async function transcribeRecording(evidenceId: string): Promise<ActionRes
   const provider = transcriptionProvider();
   if (!provider) return { ok: false, error: "Automatic transcription is not set up yet. You can import a transcript." };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("transcribe"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
 
   const supabase = await createClient();
   const { data: rec } = await supabase
@@ -104,6 +107,7 @@ export async function addHighlight(input: unknown): Promise<ActionResult<{ id: s
     return { ok: false, error: "Choose the part of the transcript to highlight." };
   }
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("note"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
   const { transcriptId, startSegment, endSegment, note } = parsed.data;
 
   const supabase = await createClient();
@@ -153,6 +157,7 @@ export interface TranscriptHit {
 
 export async function searchTranscripts(caseId: string, query: string): Promise<ActionResult<{ hits: TranscriptHit[] }>> {
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("search"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
   const q = query.trim().slice(0, 200);
   if (!q) return { ok: true, hits: [] };
   const supabase = await createClient();

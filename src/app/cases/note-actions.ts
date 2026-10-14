@@ -1,5 +1,6 @@
 "use server";
 
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { createClient, currentUserId } from "@/lib/supabase/server";
 import type { ActionResult } from "./evidence-actions";
@@ -14,6 +15,7 @@ export async function addDocumentNote(input: unknown): Promise<ActionResult> {
   const parsed = noteSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("note"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
   const supabase = await createClient();
   // The trigger and RLS check the document is the user's own.
   const { error } = await supabase

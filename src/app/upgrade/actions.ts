@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createCheckoutSession, paywallEnabled } from "@/lib/payments/stripe";
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export async function startCheckout(): Promise<{ error: string }> {
@@ -10,6 +11,7 @@ export async function startCheckout(): Promise<{ error: string }> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) redirect("/login?next=/upgrade");
+  if (!(await withinLimit("checkout"))) return { error: RATE_LIMIT_MESSAGE };
 
   const h = await headers();
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;

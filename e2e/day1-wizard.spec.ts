@@ -34,7 +34,7 @@ test("log a breakdown with location, a photo and notes in under two minutes", as
   await page.locator('input[type="file"][multiple]').setInputFiles({
     name: "dashboard.jpg",
     mimeType: "image/jpeg",
-    buffer: Buffer.from("not really a jpeg, but bytes are bytes"),
+    buffer: Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from("test photo bytes")]),
   });
   await expect(page.getByText("dashboard.jpg")).toBeVisible();
   await page.getByRole("button", { name: "Save case" }).click();

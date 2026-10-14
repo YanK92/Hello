@@ -1,5 +1,6 @@
 "use server";
 
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { entrySchema, type EntryInput } from "@/lib/chronology";
 import { createClient, currentUserId } from "@/lib/supabase/server";
 import type { ActionResult } from "./evidence-actions";
@@ -32,6 +33,7 @@ export async function createEntry(caseId: string, input: EntryInput): Promise<Ac
   const parsed = entrySchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("entry"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
 
   const { type, title, occurredAt, who, notes, evidenceIds } = parsed.data;
   const supabase = await createClient();
@@ -52,6 +54,7 @@ export async function updateEntry(eventId: string, input: EntryInput): Promise<A
   const parsed = entrySchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("entry"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
 
   const { type, title, occurredAt, who, notes, evidenceIds } = parsed.data;
   const supabase = await createClient();

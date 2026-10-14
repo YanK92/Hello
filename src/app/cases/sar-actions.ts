@@ -1,5 +1,6 @@
 "use server";
 
+import { RATE_LIMIT_MESSAGE, withinLimit } from "@/lib/rate-limit";
 import { hasPaidAccess, PAID_FEATURE_MESSAGE } from "@/lib/payments/access";
 import { sarReminderSchedule, ukTimeOn } from "@/lib/reminders/reminders";
 import { sarDueDates, todayInUk } from "@/lib/sar/dates";
@@ -28,6 +29,7 @@ export async function saveSarDraft(
   const parsed = sarFormSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await withinLimit("sar"))) return { ok: false, error: RATE_LIMIT_MESSAGE };
   if (!(await hasPaidAccess())) return { ok: false, error: PAID_FEATURE_MESSAGE };
   const form = parsed.data;
   const supabase = await createClient();

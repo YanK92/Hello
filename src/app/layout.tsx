@@ -39,6 +39,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Evidence Locker records, organises, timestamps and reminds. It provides information,
             not legal advice. You make every decision about your case.
           </p>
+          <p>
+            <Link href="/privacy">How your data is handled</Link>
+          </p>
         </footer>
       </body>
     </html>
