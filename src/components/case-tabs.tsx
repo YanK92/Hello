@@ -4,6 +4,7 @@ export const CASE_TABS = [
   { key: "overview", label: "Overview", path: "" },
   { key: "timeline", label: "Timeline", path: "/timeline" },
   { key: "recordings", label: "Recordings", path: "/recordings" },
+  { key: "sar", label: "Data requests", path: "/sar" },
 ] as const;
 
 export type CaseTab = (typeof CASE_TABS)[number]["key"];

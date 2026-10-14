@@ -1,3 +1,7 @@
+import type { SarValues } from "@/components/sar/sar-wizard";
+import type { SarDetail, SarSummary } from "@/lib/cases/sar";
+import { letterInput, sarFormSchema } from "@/lib/sar/form";
+import { buildSarLetter } from "@/lib/sar/letter";
 import type { RecordingDetail, RecordingSummary } from "@/lib/cases/recordings";
 import type { Segment } from "@/lib/transcripts/parse";
 import type { Revision } from "@/app/cases/entry-actions";
@@ -251,5 +255,102 @@ export function sampleRecordingDetail(withTranscript: boolean): RecordingDetail 
           },
         ]
       : [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Data requests (Phase 4)
+// ---------------------------------------------------------------------------
+export const SAMPLE_NOW = new Date(NOW);
+
+export const sampleSarValues: SarValues = {
+  recipient: {
+    contactId: null,
+    name: "Example Finance Ltd, Data Protection Officer",
+    address: "1 High Street\nLeeds\nLS1 1AA",
+    email: "dpo@example-finance.test",
+    save: true,
+  },
+  categories: ["all", "calls", "account", "article15"],
+  dateFrom: "2026-09-01",
+  dateTo: "",
+  format: "electronic",
+  requester: {
+    fullName: "Alex Taylor",
+    address: "2 Low Road\nYork\nYO1 1BB",
+    email: "alex@example.test",
+    phone: "",
+    references: [
+      { label: "Agreement or account number", value: "AG-12345" },
+      { label: "Vehicle registration", value: "AB19 CDE" },
+    ],
+    other: "",
+  },
+};
+
+const sampleLetter = buildSarLetter(letterInput(sarFormSchema.parse(sampleSarValues), "2026-09-28")).body;
+
+export const sampleSars: SarSummary[] = [
+  {
+    id: "s1",
+    recipient: "Example Finance Ltd, Data Protection Officer",
+    status: "sent",
+    sentOn: "2026-09-28",
+    receivedOn: "2026-09-29",
+    dueOn: "2026-10-29",
+    extendedDueOn: "2026-12-29",
+    createdAt: minutesAgo(60 * 24 * 16),
+    responseCount: 0,
+  },
+  {
+    id: "s2",
+    recipient: "Example Motors Ltd",
+    status: "response_received",
+    sentOn: "2026-08-03",
+    receivedOn: null,
+    dueOn: "2026-09-03",
+    extendedDueOn: "2026-11-03",
+    createdAt: minutesAgo(60 * 24 * 72),
+    responseCount: 1,
+  },
+  {
+    id: "s3",
+    recipient: "Example Recovery Services",
+    status: "draft",
+    sentOn: null,
+    receivedOn: null,
+    dueOn: null,
+    extendedDueOn: null,
+    createdAt: minutesAgo(30),
+    responseCount: 0,
+  },
+];
+
+export function sampleSarDetail(kind: "draft" | "sent" | "responded"): SarDetail {
+  const base = kind === "draft" ? sampleSars[2] : kind === "sent" ? sampleSars[0] : sampleSars[1];
+  return {
+    ...base,
+    recipient: kind === "draft" ? base.recipient : sampleSarValues.recipient.name,
+    recipientEmail: sampleSarValues.recipient.email,
+    recipientAddress: sampleSarValues.recipient.address,
+    sentMethod: kind === "draft" ? null : "email",
+    categories: sampleSarValues.categories,
+    dateFrom: sampleSarValues.dateFrom,
+    dateTo: null,
+    format: "electronic",
+    requester: sampleSarValues.requester,
+    letterText: sampleLetter,
+    responses:
+      kind === "responded"
+        ? [
+            {
+              id: "resp1",
+              receivedOn: "2026-09-01",
+              description: "Covering letter and 42 pages of account notes, by email.",
+              eventId: "e9",
+              files: [{ ...sampleEvidence[2], id: "v9", name: "sar-response-account-notes.pdf", size: 1_240_000 }],
+            },
+          ]
+        : [],
   };
 }

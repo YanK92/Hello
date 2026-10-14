@@ -906,3 +906,80 @@ details.card[open] > summary {
 .search-row ~ .search-hits {
   margin-top: var(--space-2);
 }
+
+/* Phase 4: data requests (SAR) */
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-3);
+}
+
+.check-row.align-start {
+  align-items: flex-start;
+}
+
+.check-row.align-start input {
+  margin-top: 2px;
+}
+
+.evidence-picker .check-row {
+  min-height: 36px;
+  padding: var(--space-1) 0;
+}
+
+.letter {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.status-pill {
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.status-pill[data-status="sent"] {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.status-pill[data-status="response_received"] {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.sar-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.due-card {
+  border-left: 4px solid var(--color-primary);
+}
+
+.explainer > summary {
+  font-weight: 600;
+}
+
+.response + .response {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+
+.due-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}

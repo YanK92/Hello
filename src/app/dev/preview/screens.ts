@@ -16,6 +16,14 @@ export const PREVIEW_SCREENS = [
   "recording-transcript",
   "recording-highlighting",
   "recording-import",
+  "sar-list",
+  "sar-wizard-recipient",
+  "sar-wizard-information",
+  "sar-wizard-details",
+  "sar-wizard-review",
+  "sar-detail-draft",
+  "sar-detail-sent",
+  "sar-detail-responded",
 ] as const;
 
 /** The preview uses sample data only, and is off in production builds. */

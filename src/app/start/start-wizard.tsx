@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { UploadRows } from "@/components/evidence/evidence-uploader";
+import { Steps } from "@/components/steps";
 import { LocationCapture } from "@/components/location/location-capture";
 import { formatBytes, rejectReason } from "@/lib/evidence/rules";
 import { uploadEvidenceFile } from "@/lib/evidence/upload";
@@ -152,16 +153,7 @@ export function StartWizard({ initialStep = 0, initialData }: { initialStep?: nu
 }
 
 export function StepIndicator({ step }: { step: number }) {
-  return (
-    <ol className="steps" aria-label="Progress">
-      {STEPS.map((label, i) => (
-        <li key={label} data-state={i < step ? "done" : i === step ? "current" : "todo"} aria-current={i === step ? "step" : undefined}>
-          <span className="step-dot">{i < step ? "✓" : i + 1}</span>
-          <span className="step-label">{label}</span>
-        </li>
-      ))}
-    </ol>
-  );
+  return <Steps labels={STEPS} step={step} />;
 }
 
 export function ItemStep({ value, onChange }: { value: string; onChange: (v: string) => void }) {

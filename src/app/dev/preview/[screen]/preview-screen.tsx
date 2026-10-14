@@ -6,7 +6,19 @@ import { Timeline } from "@/components/timeline/timeline";
 import { CaseTabs } from "@/components/case-tabs";
 import { RecordingsView } from "@/app/cases/[id]/recordings/recordings-view";
 import { RecordingDetailView } from "@/app/cases/[id]/recordings/[evidenceId]/recording-detail-view";
-import { SAMPLE_USER, sampleCase, sampleRecordingDetail, sampleRecordings, sampleRevisions } from "../samples";
+import { SarDetailView, SarListView } from "@/app/cases/[id]/sar/sar-views";
+import { SarWizard } from "@/components/sar/sar-wizard";
+import {
+  SAMPLE_NOW,
+  SAMPLE_USER,
+  sampleCase,
+  sampleRecordingDetail,
+  sampleRecordings,
+  sampleRevisions,
+  sampleSarDetail,
+  sampleSars,
+  sampleSarValues,
+} from "../samples";
 
 const ITEM = "2019 Ford Focus, AB19 CDE";
 const WHAT =
@@ -119,6 +131,42 @@ export function PreviewScreen({ screen }: { screen: string }) {
       return (
         <div className="stack">
           <RecordingDetailView caseId={sampleCase.id} recording={sampleRecordingDetail(false)} canTranscribe={false} />
+        </div>
+      );
+    case "sar-list":
+      return (
+        <div className="stack">
+          <SarListView caseId={sampleCase.id} title={sampleCase.title} sars={sampleSars} remindersOn now={SAMPLE_NOW} />
+        </div>
+      );
+    case "sar-wizard-recipient":
+    case "sar-wizard-information":
+    case "sar-wizard-details":
+    case "sar-wizard-review": {
+      const step = ["recipient", "information", "details", "review"].indexOf(screen.replace("sar-wizard-", ""));
+      return (
+        <div className="stack">
+          <h1>Prepare a data request</h1>
+          <SarWizard caseId={sampleCase.id} contacts={[]} initial={sampleSarValues} initialStep={step} />
+        </div>
+      );
+    }
+    case "sar-detail-draft":
+      return (
+        <div className="stack">
+          <SarDetailView caseId={sampleCase.id} userId={SAMPLE_USER} sar={sampleSarDetail("draft")} now={SAMPLE_NOW} />
+        </div>
+      );
+    case "sar-detail-sent":
+      return (
+        <div className="stack">
+          <SarDetailView caseId={sampleCase.id} userId={SAMPLE_USER} sar={sampleSarDetail("sent")} now={SAMPLE_NOW} />
+        </div>
+      );
+    case "sar-detail-responded":
+      return (
+        <div className="stack">
+          <SarDetailView caseId={sampleCase.id} userId={SAMPLE_USER} sar={sampleSarDetail("responded")} now={SAMPLE_NOW} />
         </div>
       );
     default:

@@ -17,11 +17,13 @@ if (!SCREENS.length) throw new Error(`No preview screens found at ${BASE}/dev/pr
 const HIDE_DEV_TOOLS = "nextjs-portal{display:none!important}";
 
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch(
-  process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {},
-);
+const browser = await chromium.launch({
+  // UK date formats in <input type="date">, as UK users see them.
+  args: ["--lang=en-GB"],
+  ...(process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {}),
+});
 for (const colorScheme of ["light", "dark"]) {
-  const page = await (await browser.newContext({ ...devices["Pixel 7"], colorScheme })).newPage();
+  const page = await (await browser.newContext({ ...devices["Pixel 7"], colorScheme, locale: "en-GB", timezoneId: "Europe/London" })).newPage();
   for (const screen of SCREENS) {
     await page.goto(`${BASE}/dev/preview/${screen}`, { waitUntil: "networkidle" });
     await page.addStyleTag({ content: HIDE_DEV_TOOLS });
