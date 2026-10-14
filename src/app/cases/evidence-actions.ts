@@ -1,7 +1,7 @@
 "use server";
 
 import { checkIntegrity, sha256Hex } from "@/lib/integrity";
-import { isAcceptedMime, MAX_EVIDENCE_BYTES, pathBelongsTo, sourceForMime } from "@/lib/evidence/rules";
+import { isAcceptedMime, maxBytesFor, pathBelongsTo, sourceForMime } from "@/lib/evidence/rules";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, currentUserId } from "@/lib/supabase/server";
 import { checkInSchema, locationColumns, registerEvidenceSchema } from "@/lib/validation/evidence";
@@ -40,7 +40,7 @@ export async function registerEvidence(input: unknown): Promise<ActionResult<{ e
   if (downloadError || !blob) return { ok: false, error: "The uploaded file could not be found. Please try again." };
 
   const mime = blob.type.split(";")[0].trim();
-  if (!isAcceptedMime(mime) || blob.size === 0 || blob.size > MAX_EVIDENCE_BYTES) {
+  if (!isAcceptedMime(mime) || blob.size === 0 || blob.size > maxBytesFor(mime)) {
     await discard();
     return { ok: false, error: "That file type or size is not supported." };
   }

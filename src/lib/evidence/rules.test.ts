@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evidencePath, formatBytes, pathBelongsTo, rejectReason, sourceForMime } from "./rules";
+import { AUDIO_MIME_TYPES, evidencePath, formatBytes, pathBelongsTo, rejectReason, sourceForMime } from "./rules";
 
 const USER = "00000000-0000-4000-8000-00000000000a";
 const CASE = "11111111-1111-4111-8111-111111111111";
@@ -15,6 +15,17 @@ describe("rejectReason", () => {
     expect(rejectReason({ type: "application/x-msdownload", size: 10 })).toMatch(/only photos/i);
     expect(rejectReason({ type: "image/jpeg", size: 0 })).toMatch(/empty/i);
     expect(rejectReason({ type: "image/jpeg", size: 25 * 1024 * 1024 + 1 })).toMatch(/25 MB/);
+  });
+
+  it("keeps recordings and photos/documents to their own upload places", () => {
+    expect(rejectReason({ type: "audio/mpeg", size: 10 })).toMatch(/photos/i);
+    expect(rejectReason({ type: "image/jpeg", size: 10 }, AUDIO_MIME_TYPES)).toMatch(/audio/i);
+    expect(rejectReason({ type: "audio/mp4", size: 10 }, AUDIO_MIME_TYPES)).toBeNull();
+  });
+
+  it("allows recordings up to 100 MB", () => {
+    expect(rejectReason({ type: "audio/mpeg", size: 90 * 1024 * 1024 }, AUDIO_MIME_TYPES)).toBeNull();
+    expect(rejectReason({ type: "audio/mpeg", size: 100 * 1024 * 1024 + 1 }, AUDIO_MIME_TYPES)).toMatch(/100 MB/);
   });
 });
 
@@ -36,6 +47,7 @@ describe("helpers", () => {
   it("maps types to sources", () => {
     expect(sourceForMime("image/png")).toBe("photo");
     expect(sourceForMime("application/pdf")).toBe("doc");
+    expect(sourceForMime("audio/x-m4a")).toBe("audio");
   });
 
   it("formats sizes", () => {

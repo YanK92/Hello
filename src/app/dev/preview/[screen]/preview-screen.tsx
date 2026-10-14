@@ -4,7 +4,9 @@ import { CaseView } from "@/components/case-view";
 import { StartWizard, type WizardData } from "@/app/start/start-wizard";
 import { Timeline } from "@/components/timeline/timeline";
 import { CaseTabs } from "@/components/case-tabs";
-import { SAMPLE_USER, sampleCase, sampleRevisions } from "../samples";
+import { RecordingsView } from "@/app/cases/[id]/recordings/recordings-view";
+import { RecordingDetailView } from "@/app/cases/[id]/recordings/[evidenceId]/recording-detail-view";
+import { SAMPLE_USER, sampleCase, sampleRecordingDetail, sampleRecordings, sampleRevisions } from "../samples";
 
 const ITEM = "2019 Ford Focus, AB19 CDE";
 const WHAT =
@@ -68,6 +70,57 @@ export function PreviewScreen({ screen }: { screen: string }) {
       );
     case "timeline-history":
       return <TimelinePage preview={{ openPanel: { id: "e3", panel: "history", revisions: sampleRevisions } }} />;
+    case "recordings-notice":
+      return (
+        <div className="stack">
+          <RecordingsView caseId={sampleCase.id} title={sampleCase.title} userId={SAMPLE_USER} acknowledged={false} recordings={[]} />
+        </div>
+      );
+    case "recordings":
+      return (
+        <div className="stack">
+          <RecordingsView
+            caseId={sampleCase.id}
+            title={sampleCase.title}
+            userId={SAMPLE_USER}
+            acknowledged
+            recordings={sampleRecordings}
+            previewSearch={{
+              query: "inspection",
+              hits: [
+                {
+                  evidenceId: "r1",
+                  headline:
+                    "We can book it in for an <mark>inspection</mark> next Tuesday at nine … Can you confirm the <mark>inspection</mark> by email",
+                },
+              ],
+            }}
+          />
+        </div>
+      );
+    case "recording-transcript":
+      return (
+        <div className="stack">
+          <RecordingDetailView caseId={sampleCase.id} recording={sampleRecordingDetail(true)} canTranscribe={false} />
+        </div>
+      );
+    case "recording-highlighting":
+      return (
+        <div className="stack">
+          <RecordingDetailView
+            caseId={sampleCase.id}
+            recording={sampleRecordingDetail(true)}
+            canTranscribe={false}
+            preview={{ find: "email", range: [4, 5] }}
+          />
+        </div>
+      );
+    case "recording-import":
+      return (
+        <div className="stack">
+          <RecordingDetailView caseId={sampleCase.id} recording={sampleRecordingDetail(false)} canTranscribe={false} />
+        </div>
+      );
     default:
       return <p>Unknown screen.</p>;
   }

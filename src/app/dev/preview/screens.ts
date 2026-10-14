@@ -11,6 +11,11 @@ export const PREVIEW_SCREENS = [
   "timeline-filtered",
   "timeline-add",
   "timeline-history",
+  "recordings-notice",
+  "recordings",
+  "recording-transcript",
+  "recording-highlighting",
+  "recording-import",
 ] as const;
 
 /** The preview uses sample data only, and is off in production builds. */

@@ -1,3 +1,5 @@
+import type { RecordingDetail, RecordingSummary } from "@/lib/cases/recordings";
+import type { Segment } from "@/lib/transcripts/parse";
 import type { Revision } from "@/app/cases/entry-actions";
 import type { EvidenceItem } from "@/components/evidence/evidence-list";
 import type { CaseData, TimelineEntry } from "@/lib/cases/load";
@@ -148,3 +150,106 @@ export const sampleCase: CaseData = {
   entries: sampleEntries,
   evidence: sampleEvidence,
 };
+
+// ---------------------------------------------------------------------------
+// Recordings (Phase 3)
+// ---------------------------------------------------------------------------
+
+/** One second of silent 8 kHz WAV, so the preview shows a real audio player. */
+function silentWav(): string {
+  const samples = 8000;
+  const bytes = new Uint8Array(44 + samples);
+  const view = new DataView(bytes.buffer);
+  const text = (at: number, s: string) => [...s].forEach((c, i) => (bytes[at + i] = c.charCodeAt(0)));
+  text(0, "RIFF");
+  view.setUint32(4, 36 + samples, true);
+  text(8, "WAVEfmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, 8000, true);
+  view.setUint32(28, 8000, true);
+  view.setUint16(32, 1, true);
+  view.setUint16(34, 8, true);
+  text(36, "data");
+  view.setUint32(40, samples, true);
+  bytes.fill(128, 44);
+  let binary = "";
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return `data:audio/wav;base64,${btoa(binary)}`;
+}
+
+const recordingBase = {
+  mime: "audio/x-m4a",
+  hashVerifiedAt: minutesAgo(30),
+  lastCheckedAt: minutesAgo(30),
+  lastCheckOk: true,
+  thumbUrl: null,
+};
+
+export const sampleRecordings: RecordingSummary[] = [
+  {
+    ...recordingBase,
+    id: "r1",
+    name: "Call with dealer service desk.m4a",
+    size: 6_400_000,
+    sha256: "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+    uploadedAt: minutesAgo(30),
+    transcriptStatus: "done",
+    segmentCount: 6,
+    highlightCount: 1,
+  },
+  {
+    ...recordingBase,
+    id: "r2",
+    name: "Voicemail from finance company.m4a",
+    size: 820_000,
+    sha256: "fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9",
+    uploadedAt: minutesAgo(8),
+    hashVerifiedAt: minutesAgo(8),
+    lastCheckedAt: minutesAgo(8),
+    transcriptStatus: "none",
+    segmentCount: 0,
+    highlightCount: 0,
+  },
+];
+
+const segments: Segment[] = [
+  { start: 0, end: 6.5, speaker: "Me", text: "Hi, I'm calling about the Ford Focus I bought three weeks ago. The engine warning light came on yesterday." },
+  { start: 6.5, end: 14.2, speaker: "Service desk", text: "Sorry to hear that. Can you give me the registration?" },
+  { start: 14.2, end: 18, speaker: "Me", text: "It's AB19 CDE." },
+  { start: 18, end: 31.4, speaker: "Service desk", text: "Thanks. We can book it in for an inspection next Tuesday at nine. The recovery truck brought it here this morning." },
+  { start: 31.4, end: 36, speaker: "Me", text: "Can you confirm the inspection by email, please?" },
+  { start: 36, end: 41.8, speaker: "Service desk", text: "Yes, I'll email the booking reference this afternoon." },
+];
+
+export function sampleRecordingDetail(withTranscript: boolean): RecordingDetail {
+  const [r] = sampleRecordings;
+  return {
+    ...r,
+    audioUrl: silentWav(),
+    transcript: withTranscript
+      ? {
+          id: "t1",
+          status: "done",
+          source: "import",
+          model: null,
+          error: null,
+          updatedAt: minutesAgo(25),
+          segments,
+        }
+      : null,
+    highlights: withTranscript
+      ? [
+          {
+            id: "h1",
+            startSegment: 3,
+            endSegment: 3,
+            quote: `Service desk: ${segments[3].text}`,
+            note: "Inspection date offered",
+            createdAt: minutesAgo(20),
+          },
+        ]
+      : [],
+  };
+}

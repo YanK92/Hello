@@ -41,8 +41,8 @@ beforeAll(async () => {
 
   const evidence = await admin.query<{ id: string }>(
     `insert into public.evidence (case_id, user_id, storage_path, sha256, mime, size, source)
-     values ($1, $2, $3, $4, 'image/jpeg', 10, 'photo') returning id`,
-    [bobCase, BOB, `${BOB}/${bobCase}/photo.jpg`, HASH],
+     values ($1, $2, $3, $4, 'audio/mp4', 10, 'audio') returning id`,
+    [bobCase, BOB, `${BOB}/${bobCase}/call.m4a`, HASH],
   );
   bobEvidence = evidence.rows[0].id;
 
@@ -60,7 +60,7 @@ beforeAll(async () => {
   );
   await admin.query(
     `insert into storage.objects (bucket_id, name, owner) values ('evidence', $1, $2)`,
-    [`${BOB}/${bobCase}/photo.jpg`, BOB],
+    [`${BOB}/${bobCase}/call.m4a`, BOB],
   );
 });
 
@@ -169,7 +169,7 @@ describe("child tables", () => {
         bobEvidence,
       ]),
     );
-    expect(err).toMatch(/row-level security/);
+    expect(err).toMatch(/row-level security|one of your recordings/);
   });
 
   it("a user cannot update another user's event", async () => {

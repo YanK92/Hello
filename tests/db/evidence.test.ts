@@ -178,13 +178,16 @@ describe("check-ins", () => {
 });
 
 describe("evidence bucket", () => {
-  it("limits file size and type", async () => {
+  it("is private and limits file size and type", async () => {
     const { rows } = await db.admin.query(
       "select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'evidence'",
     );
     expect(rows[0].public).toBe(false);
-    expect(Number(rows[0].file_size_limit)).toBe(25 * 1024 * 1024);
+    // Raised from 25 MB in Phase 3 for call recordings; per-type limits are
+    // enforced by the app (src/lib/evidence/rules.ts).
+    expect(Number(rows[0].file_size_limit)).toBeLessThanOrEqual(100 * 1024 * 1024);
     expect(rows[0].allowed_mime_types).toContain("image/jpeg");
     expect(rows[0].allowed_mime_types).toContain("application/pdf");
+    expect(rows[0].allowed_mime_types).not.toContain("application/x-msdownload");
   });
 });

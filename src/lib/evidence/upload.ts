@@ -1,7 +1,7 @@
 import { registerEvidence } from "@/app/cases/evidence-actions";
 import { sha256Hex } from "@/lib/integrity";
 import { createClient } from "@/lib/supabase/client";
-import { evidencePath, rejectReason, type EvidenceMime } from "./rules";
+import { DOCUMENT_MIME_TYPES, evidencePath, rejectReason, type EvidenceMime } from "./rules";
 
 export interface UploadTarget {
   userId: string;
@@ -16,8 +16,12 @@ export type UploadOutcome = { ok: true; sha256: string } | { ok: false; error: s
  * user's private folder (no overwrite), then ask the server to verify the
  * stored copy against that hash and record it.
  */
-export async function uploadEvidenceFile(file: File, target: UploadTarget): Promise<UploadOutcome> {
-  const reason = rejectReason(file);
+export async function uploadEvidenceFile(
+  file: File,
+  target: UploadTarget,
+  allowed: readonly EvidenceMime[] = DOCUMENT_MIME_TYPES,
+): Promise<UploadOutcome & { evidenceId?: string }> {
+  const reason = rejectReason(file, allowed);
   if (reason) return { ok: false, error: reason };
 
   const sha256 = await sha256Hex(file);
@@ -36,5 +40,5 @@ export async function uploadEvidenceFile(file: File, target: UploadTarget): Prom
     sha256,
     originalName: file.name,
   });
-  return result.ok ? { ok: true, sha256 } : { ok: false, error: result.error };
+  return result.ok ? { ok: true, sha256, evidenceId: result.evidenceId } : { ok: false, error: result.error };
 }

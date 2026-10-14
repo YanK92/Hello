@@ -27,7 +27,9 @@ export function EvidenceList({ items }: { items: EvidenceItem[] }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={item.thumbUrl} alt="" loading="lazy" />
             ) : (
-              <span className="evidence-thumb-label">{item.mime === "application/pdf" ? "PDF" : "FILE"}</span>
+              <span className="evidence-thumb-label">
+                {item.mime === "application/pdf" ? "PDF" : item.mime.startsWith("audio/") ? "AUDIO" : "FILE"}
+              </span>
             )}
           </div>
           <div className="evidence-body">

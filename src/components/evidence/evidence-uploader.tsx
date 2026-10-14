@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
-import { ACCEPTED_MIME_TYPES } from "@/lib/evidence/rules";
+import { AUDIO_MIME_TYPES, DOCUMENT_MIME_TYPES } from "@/lib/evidence/rules";
 import { uploadEvidenceFile, type UploadTarget } from "@/lib/evidence/upload";
 
 type Status = "hashing" | "done" | "failed";
@@ -15,7 +15,17 @@ interface Row {
 }
 
 /** Picks photos or documents and uploads each with its SHA-256 fingerprint. */
-export function EvidenceUploader({ target, onDone }: { target: UploadTarget; onDone?: () => void }) {
+export function EvidenceUploader({
+  target,
+  onDone,
+  kind = "documents",
+}: {
+  target: UploadTarget;
+  onDone?: () => void;
+  /** "audio" for call recordings; "documents" for photos and PDFs. */
+  kind?: "documents" | "audio";
+}) {
+  const allowed = kind === "audio" ? AUDIO_MIME_TYPES : DOCUMENT_MIME_TYPES;
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
@@ -31,7 +41,7 @@ export function EvidenceUploader({ target, onDone }: { target: UploadTarget; onD
     setRows((r) => [...list.map((f, i) => ({ key: keys[i], name: f.name, status: "hashing" as Status })), ...r]);
 
     for (const [i, file] of list.entries()) {
-      const result = await uploadEvidenceFile(file, target);
+      const result = await uploadEvidenceFile(file, target, allowed);
       setRows((r) =>
         r.map((row) =>
           row.key === keys[i]
@@ -52,34 +62,48 @@ export function EvidenceUploader({ target, onDone }: { target: UploadTarget; onD
   return (
     <div className="stack-sm">
       <div className="button-row">
-        <label className="button" htmlFor={`${id}-camera`} aria-disabled={busy}>
-          Take a photo
-        </label>
-        <input
-          ref={cameraRef}
-          id={`${id}-camera`}
-          className="visually-hidden"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          disabled={busy}
-          onChange={(e) => handle(e.target.files)}
-        />
-        <label className="button" data-variant="secondary" htmlFor={`${id}-files`} aria-disabled={busy}>
-          Add files
+        {kind === "documents" && (
+          <>
+            <label className="button" htmlFor={`${id}-camera`} aria-disabled={busy}>
+              Take a photo
+            </label>
+            <input
+              ref={cameraRef}
+              id={`${id}-camera`}
+              className="visually-hidden"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              disabled={busy}
+              onChange={(e) => handle(e.target.files)}
+            />
+          </>
+        )}
+        <label
+          className="button"
+          data-variant={kind === "documents" ? "secondary" : undefined}
+          htmlFor={`${id}-files`}
+          aria-disabled={busy}
+        >
+          {kind === "audio" ? "Add a recording" : "Add files"}
         </label>
         <input
           ref={filesRef}
           id={`${id}-files`}
           className="visually-hidden"
           type="file"
-          accept={ACCEPTED_MIME_TYPES.join(",")}
+          accept={kind === "audio" ? ["audio/*", ...allowed].join(",") : allowed.join(",")}
           multiple
           disabled={busy}
           onChange={(e) => handle(e.target.files)}
         />
       </div>
-      <p className="muted small">Photos and PDFs up to 25 MB. Each file gets a SHA-256 fingerprint before upload.</p>
+      <p className="muted small">
+        {kind === "audio"
+          ? "MP3, M4A, AAC, WAV, WebM or Ogg, up to 100 MB."
+          : "Photos and PDFs up to 25 MB."}{" "}
+        Each file gets a SHA-256 fingerprint before upload.
+      </p>
       <UploadRows rows={rows} />
     </div>
   );

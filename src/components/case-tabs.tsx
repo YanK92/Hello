@@ -3,6 +3,7 @@ import Link from "next/link";
 export const CASE_TABS = [
   { key: "overview", label: "Overview", path: "" },
   { key: "timeline", label: "Timeline", path: "/timeline" },
+  { key: "recordings", label: "Recordings", path: "/recordings" },
 ] as const;
 
 export type CaseTab = (typeof CASE_TABS)[number]["key"];
