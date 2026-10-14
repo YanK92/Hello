@@ -6,6 +6,11 @@ export const PREVIEW_SCREENS = [
   "wizard-3-where-manual",
   "wizard-4-photos",
   "case",
+  "timeline",
+  "timeline-day-count",
+  "timeline-filtered",
+  "timeline-add",
+  "timeline-history",
 ] as const;
 
 /** The preview uses sample data only, and is off in production builds. */

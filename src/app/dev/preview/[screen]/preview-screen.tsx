@@ -2,7 +2,9 @@
 
 import { CaseView } from "@/components/case-view";
 import { StartWizard, type WizardData } from "@/app/start/start-wizard";
-import { SAMPLE_CASE, SAMPLE_USER, sampleDetails, sampleEntries, sampleEvidence } from "../samples";
+import { Timeline } from "@/components/timeline/timeline";
+import { CaseTabs } from "@/components/case-tabs";
+import { SAMPLE_USER, sampleCase, sampleRevisions } from "../samples";
 
 const ITEM = "2019 Ford Focus, AB19 CDE";
 const WHAT =
@@ -41,18 +43,44 @@ export function PreviewScreen({ screen }: { screen: string }) {
     case "case":
       return (
         <div className="stack">
-          <CaseView
-            title={ITEM}
-            details={sampleDetails}
-            entries={sampleEntries}
-            items={sampleEvidence}
-            uploadTarget={{ userId: SAMPLE_USER, caseId: SAMPLE_CASE, eventId: null }}
-          />
+          <CaseView data={sampleCase} userId={SAMPLE_USER} />
         </div>
       );
+    case "timeline":
+      return <TimelinePage />;
+    case "timeline-day-count":
+      return <TimelinePage preview={{ selected: ["e0", "e1"] }} />;
+    case "timeline-filtered":
+      return <TimelinePage preview={{ filter: { types: ["communication", "check_in"], text: "", withFilesOnly: false } }} />;
+    case "timeline-add":
+      return (
+        <TimelinePage
+          preview={{
+            adding: {
+              type: "communication",
+              title: "Email from the dealer with inspection date",
+              occurredAtLocal: "2026-10-14T16:10",
+              who: "Sam, service desk",
+              evidenceIds: ["v3"],
+            },
+          }}
+        />
+      );
+    case "timeline-history":
+      return <TimelinePage preview={{ openPanel: { id: "e3", panel: "history", revisions: sampleRevisions } }} />;
     default:
       return <p>Unknown screen.</p>;
   }
+}
+
+function TimelinePage({ preview }: { preview?: Parameters<typeof Timeline>[0]["preview"] }) {
+  return (
+    <div className="stack">
+      <h1>{sampleCase.title}</h1>
+      <CaseTabs caseId={sampleCase.id} active="timeline" />
+      <Timeline caseId={sampleCase.id} entries={sampleCase.entries} evidence={sampleCase.evidence} preview={preview} />
+    </div>
+  );
 }
 
 function WizardPage({ step, data }: { step: number; data: Partial<WizardData> }) {

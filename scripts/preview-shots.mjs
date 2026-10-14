@@ -1,21 +1,18 @@
 #!/usr/bin/env node
 // Screenshots every dev preview screen on a phone viewport, light and dark.
 // Usage: start `npm run dev`, then `npm run preview:shots [-- outDir]`.
+// PREVIEW_ONLY=timeline limits it to screens whose name starts with that.
 // Set PLAYWRIGHT_CHROMIUM_PATH to use a preinstalled Chromium.
 import { mkdirSync } from "node:fs";
 import { chromium, devices } from "@playwright/test";
 
 const BASE = process.env.PREVIEW_URL ?? "http://localhost:3000";
 const OUT = process.argv[2] ?? "preview-shots";
-const SCREENS = [
-  "wizard-1-item",
-  "wizard-2-what",
-  "wizard-3-where",
-  "wizard-3-where-recorded",
-  "wizard-3-where-manual",
-  "wizard-4-photos",
-  "case",
-];
+// Screens are listed on the preview index page, so this never goes stale.
+const index = await (await fetch(`${BASE}/dev/preview`)).text();
+const SCREENS = [...index.matchAll(/href="\/dev\/preview\/([a-z0-9-]+)"/g)].map((m) => m[1])
+  .filter((s) => !process.env.PREVIEW_ONLY || s.startsWith(process.env.PREVIEW_ONLY));
+if (!SCREENS.length) throw new Error(`No preview screens found at ${BASE}/dev/preview`);
 // Hide the Next.js dev tools button so it does not cover content.
 const HIDE_DEV_TOOLS = "nextjs-portal{display:none!important}";
 
