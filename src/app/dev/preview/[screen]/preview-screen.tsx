@@ -8,6 +8,9 @@ import { RecordingsView } from "@/app/cases/[id]/recordings/recordings-view";
 import { RecordingDetailView } from "@/app/cases/[id]/recordings/[evidenceId]/recording-detail-view";
 import { SarDetailView, SarListView } from "@/app/cases/[id]/sar/sar-views";
 import { SarWizard } from "@/components/sar/sar-wizard";
+import { CompareView } from "@/app/cases/[id]/compare/compare-view";
+import { ExportView } from "@/app/cases/[id]/export/export-view";
+import { UpgradeView } from "@/app/upgrade/upgrade-view";
 import {
   SAMPLE_NOW,
   SAMPLE_USER,
@@ -169,6 +172,34 @@ export function PreviewScreen({ screen }: { screen: string }) {
           <SarDetailView caseId={sampleCase.id} userId={SAMPLE_USER} sar={sampleSarDetail("responded")} now={SAMPLE_NOW} />
         </div>
       );
+    case "export":
+    case "export-locked":
+      return (
+        <div className="stack">
+          <ExportView
+            caseId={sampleCase.id}
+            title={sampleCase.title}
+            paid={screen === "export"}
+            summary={{ entries: 4, files: 4, bytes: 10_884_000, transcripts: 1, sars: 3, tooLarge: false }}
+          />
+        </div>
+      );
+    case "compare": {
+      const [dash, odo] = sampleCase.evidence;
+      return (
+        <div className="stack">
+          <CompareView
+            caseId={sampleCase.id}
+            title={sampleCase.title}
+            options={sampleCase.evidence.map((e) => ({ id: e.id, name: e.name }))}
+            left={{ ...dash, url: dash.thumbUrl, notes: [{ id: "n1", page: null, note: "Warning light on at 14:35" }] }}
+            right={{ ...odo, url: odo.thumbUrl, notes: [{ id: "n2", page: null, note: "Mileage 32,410" }] }}
+          />
+        </div>
+      );
+    }
+    case "upgrade":
+      return <UpgradeView status={null} paywallOn hasAccess={false} priceLabel="£19 one-off" />;
     default:
       return <p>Unknown screen.</p>;
   }

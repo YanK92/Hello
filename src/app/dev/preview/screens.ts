@@ -24,6 +24,10 @@ export const PREVIEW_SCREENS = [
   "sar-detail-draft",
   "sar-detail-sent",
   "sar-detail-responded",
+  "export",
+  "export-locked",
+  "compare",
+  "upgrade",
 ] as const;
 
 /** The preview uses sample data only, and is off in production builds. */

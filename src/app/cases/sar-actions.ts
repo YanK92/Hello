@@ -1,5 +1,6 @@
 "use server";
 
+import { hasPaidAccess, PAID_FEATURE_MESSAGE } from "@/lib/payments/access";
 import { sarReminderSchedule, ukTimeOn } from "@/lib/reminders/reminders";
 import { sarDueDates, todayInUk } from "@/lib/sar/dates";
 import { letterInput, markSentSchema, responseSchema, sarFormSchema } from "@/lib/sar/form";
@@ -27,6 +28,7 @@ export async function saveSarDraft(
   const parsed = sarFormSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await hasPaidAccess())) return { ok: false, error: PAID_FEATURE_MESSAGE };
   const form = parsed.data;
   const supabase = await createClient();
 
@@ -85,6 +87,7 @@ export async function markSarSent(sarId: string, input: unknown): Promise<Action
   const today = todayInUk();
   if (sentOn > today || (receivedOn && receivedOn > today)) return { ok: false, error: "Dates cannot be in the future." };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await hasPaidAccess())) return { ok: false, error: PAID_FEATURE_MESSAGE };
 
   const supabase = await createClient();
   const { data: sar } = await supabase
@@ -131,6 +134,7 @@ export async function logSarResponse(sarId: string, input: unknown): Promise<Act
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   if (parsed.data.receivedOn > todayInUk()) return { ok: false, error: "The date cannot be in the future." };
   if (!(await currentUserId())) return { ok: false, error: "Please sign in again." };
+  if (!(await hasPaidAccess())) return { ok: false, error: PAID_FEATURE_MESSAGE };
 
   const supabase = await createClient();
   const { data: sar } = await supabase.from("sar_requests").select("id, case_id, recipient").eq("id", sarId).maybeSingle();

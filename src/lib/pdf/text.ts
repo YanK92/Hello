@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
 
 // A4 in points.
 export const PAGE = { width: 595.28, height: 841.89, margin: 56 };
@@ -61,6 +61,16 @@ export interface TextWriter {
   space(points: number): void;
   /** Current page number (1-based). */
   pageNumber(): number;
+  /** Writes `left` and right-aligns `right` on the same line (for indexes). */
+  row(left: string, right: string, opts?: { size?: number; bold?: boolean; indent?: number }): void;
+  /** Draws an image scaled to fit the remaining width and the given max height, starting a page if needed. */
+  image(img: PDFImage, maxHeight?: number): void;
+  /** Appends ready-made pages (e.g. copied from a PDF) and continues on a fresh page after them. */
+  appendPages(pages: PDFPage[]): void;
+  /** Draws a thin horizontal rule. */
+  rule(): void;
+  /** Moves to a new page unless the current one is still empty. Returns the page number. */
+  freshPage(): number;
 }
 
 /** A simple flowing-text writer over pdf-lib, shared by letters and bundles. */
@@ -88,6 +98,52 @@ export async function createTextWriter(title: string): Promise<TextWriter> {
     },
     pageNumber() {
       return doc.getPageCount();
+    },
+    row(left, right, opts = {}) {
+      const size = opts.size ?? 11;
+      const f = opts.bold ? bold : font;
+      const indent = opts.indent ?? 0;
+      const lineHeight = size * 1.4;
+      const r = toWinAnsi(right);
+      const rightWidth = f.widthOfTextAtSize(r, size);
+      const maxLeft = PAGE.width - PAGE.margin * 2 - indent - rightWidth - 12;
+      const lines = wrapText(toWinAnsi(left), maxLeft, (t) => f.widthOfTextAtSize(t, size));
+      lines.forEach((line, i) => {
+        if (y - lineHeight < PAGE.margin) writer.newPage();
+        y -= lineHeight;
+        page.drawText(line, { x: PAGE.margin + indent, y, size, font: f, color: rgb(0.1, 0.1, 0.12) });
+        if (i === lines.length - 1) {
+          page.drawText(r, { x: PAGE.width - PAGE.margin - rightWidth, y, size, font: f, color: rgb(0.1, 0.1, 0.12) });
+        }
+      });
+    },
+    image(img, maxHeight = PAGE.height - PAGE.margin * 2) {
+      const maxWidth = PAGE.width - PAGE.margin * 2;
+      const scale = Math.min(1, maxWidth / img.width, maxHeight / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      if (y - h < PAGE.margin) writer.newPage();
+      y -= h;
+      page.drawImage(img, { x: PAGE.margin, y, width: w, height: h });
+      writer.space(8);
+    },
+    appendPages(pages) {
+      for (const p of pages) doc.addPage(p);
+      writer.newPage();
+    },
+    freshPage() {
+      if (y < PAGE.height - PAGE.margin) writer.newPage();
+      return doc.getPageCount();
+    },
+    rule() {
+      writer.space(6);
+      page.drawLine({
+        start: { x: PAGE.margin, y },
+        end: { x: PAGE.width - PAGE.margin, y },
+        thickness: 0.5,
+        color: rgb(0.75, 0.76, 0.78),
+      });
+      writer.space(6);
     },
     write(text, opts = {}) {
       const size = opts.size ?? 11;

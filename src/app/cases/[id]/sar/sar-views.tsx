@@ -6,6 +6,7 @@ import { DueText, SAR_STATUS_LABELS } from "@/components/sar/sar-dates";
 import { LetterActions, MarkSentForm, ResponseForm, StatusActions } from "@/components/sar/sar-detail-parts";
 import { SarExplainer } from "@/components/sar/sar-explainer";
 import { SarList } from "@/components/sar/sar-list";
+import { UpgradeCard } from "@/components/upgrade-card";
 import type { SarDetail, SarSummary } from "@/lib/cases/sar";
 import { formatLongDate } from "@/lib/sar/letter-dates";
 
@@ -16,12 +17,14 @@ export function SarListView({
   sars,
   remindersOn,
   now,
+  paid = true,
 }: {
   caseId: string;
   title: string;
   sars: SarSummary[];
   remindersOn: boolean;
   now?: Date;
+  paid?: boolean;
 }) {
   return (
     <>
@@ -31,9 +34,13 @@ export function SarListView({
         A subject access request (SAR) asks an organisation for a copy of the personal information it holds about you.
         This helper prepares a letter from the options you choose, records when you sent it, and tracks what comes back.
       </p>
-      <Link href={`/cases/${caseId}/sar/new`} className="button">
-        Prepare a request
-      </Link>
+      {paid ? (
+        <Link href={`/cases/${caseId}/sar/new`} className="button">
+          Prepare a request
+        </Link>
+      ) : (
+        <UpgradeCard feature="The data request helper" />
+      )}
       <SarList caseId={caseId} sars={sars} now={now} />
       <section className="card stack-sm" aria-label="Reminders">
         <RemindersToggle initial={remindersOn} />

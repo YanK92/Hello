@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SarWizard, blankSarValues, type SarValues } from "@/components/sar/sar-wizard";
 import { isUuid, requireCaseSummary } from "@/lib/cases/guard";
+import { UpgradeCard } from "@/components/upgrade-card";
 import { caseDefaults, loadContacts, loadSar } from "@/lib/cases/sar";
+import { hasPaidAccess } from "@/lib/payments/access";
 
 export const metadata: Metadata = { title: "Prepare a data request" };
 
@@ -16,6 +18,7 @@ async function NewSar({
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const { caseId } = await requireCaseSummary(id, "/sar/new");
+  if (!(await hasPaidAccess())) return <UpgradeCard feature="The data request helper" />;
   const draftId = typeof query.draft === "string" && isUuid(query.draft) ? query.draft : undefined;
   const [contacts, defaults, draft] = await Promise.all([
     loadContacts(),

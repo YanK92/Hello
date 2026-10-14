@@ -15,6 +15,9 @@ export default function PreviewIndex() {
           </li>
         ))}
       </ul>
+      <p>
+        <a href="/dev/preview-bundle">Sample case bundle (PDF)</a>
+      </p>
     </div>
   );
 }
