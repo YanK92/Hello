@@ -158,7 +158,9 @@ describe("child tables", () => {
         [bobCase, HASH],
       ),
     );
-    expect(err).toMatch(/row-level security/);
+    // Since Phase 1 users cannot insert evidence rows at all (the server
+    // does, after hashing the file itself); either refusal is a pass.
+    expect(err).toMatch(/row-level security|permission denied/);
   });
 
   it("a user cannot add a transcript to another user's evidence", async () => {

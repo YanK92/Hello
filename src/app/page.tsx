@@ -22,11 +22,14 @@ export default function Home() {
         </a>
         .
       </p>
-      <p>
-        <Link href="/cases" className="button">
+      <div className="button-row">
+        <Link href="/start" className="button">
+          Something has gone wrong
+        </Link>
+        <Link href="/cases" className="button" data-variant="secondary">
           Go to my cases
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

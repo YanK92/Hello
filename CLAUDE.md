@@ -38,7 +38,10 @@ across `src/` and `public/`. Add phrases there rather than weakening the check.
 - `audit_log` is append-only: no update/delete policies, and triggers block update, delete and truncate.
   Audit rows are written by the `audit_row_change` trigger, not by app code.
 - Server-side timestamps (`events.recorded_at`, `evidence.uploaded_at`) are set by triggers; clients cannot set them.
-- Evidence files live in the private `evidence` bucket under `<user_id>/...`, served by signed URL only. No overwrite.
+- Evidence files live in the private `evidence` bucket under `<user_id>/<case_id>/<uuid>.<ext>`, served by signed URL only. No overwrite.
+- Evidence rows are written only by the server with the service role (`src/lib/supabase/admin.ts`), after it has
+  downloaded the stored file and matched its own SHA-256 against the browser's. Users may only change `event_id`.
+  Use the admin client for nothing else, and only after confirming the signed-in user owns the case.
 - Every new table or policy needs RLS tests in `tests/db/` proving cross-user access fails.
 
 ## Commands
@@ -50,6 +53,12 @@ across `src/` and `public/`. Add phrases there rather than weakening the check.
 | `npm run test:db` | RLS tests; needs `TEST_DATABASE_URL` pointing at a disposable Postgres |
 | `npm run test:e2e` | Playwright; set `E2E_SUPABASE=1` with `npx supabase start` running for the auth flow |
 | `npx supabase start` | Local Supabase stack (Docker), applies migrations |
+| `npm run preview:shots` | Phone screenshots of `/dev/preview/*` (sample data, dev only, 404 in production) |
+
+## Visual previews
+
+The owner reviews screens visually. When a phase adds or changes UI, add or update a screen in
+`src/app/dev/preview/` (sample data only, real components), run `npm run preview:shots` and share the images.
 
 ## Testing priorities
 

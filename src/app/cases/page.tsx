@@ -43,11 +43,14 @@ export default function CasesPage() {
   return (
     <div className="stack">
       <h1>My cases</h1>
-      <p>
-        <Link href="/cases/new" className="button">
+      <div className="button-row">
+        <Link href="/start" className="button">
+          Something has gone wrong
+        </Link>
+        <Link href="/cases/new" className="button" data-variant="secondary">
           Start a new case
         </Link>
-      </p>
+      </div>
       <Suspense fallback={<p className="muted">Loading your cases…</p>}>
         <CaseList />
       </Suspense>

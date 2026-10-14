@@ -12,7 +12,8 @@
     "test:db": "vitest run -c vitest.db.config.ts",
     "test:e2e": "playwright test",
     "lint:copy": "node scripts/copy-lint.mjs",
-    "check": "npm run lint && npm run lint:copy && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run lint:copy && npm run typecheck && npm run test",
+    "preview:shots": "node scripts/preview-shots.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
